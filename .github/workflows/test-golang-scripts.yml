@@ -27,10 +27,17 @@ jobs:
       - name: Run golang script
         id: run-script
         run: |
-          cd scripts
-          go run workflows/hello.go
-          go run workflows/testing-multiple-things/get-variables/get-variables.go
-          go run workflows/testing-multiple-things/set-variables/set-variables.go
+          cd scripts/workflows 
+          go mod init 
+          go run hello.go
+
+          cd testing-multiple-things/get-variables
+          go mod init
+          go run get-variables.go
+
+          cd ../set-variables
+          go mod init
+          go run set-variables.go
 
       - name: grab env variable and set as output
         id: get-env
