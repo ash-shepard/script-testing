@@ -1,0 +1,32 @@
+name: Test Golang Scripts
+
+on:
+  workflow_dispatch:
+    inputs:
+      script:
+        description: 'Script to run (e.g., hello.go)'
+        required: false
+        default: 'hello.go'
+
+jobs:
+  test-script:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+      
+      - name: Run golang script
+        run: |
+          cd scripts
+          go run ${{ github.event.inputs.script }}
+      
+      - name: Test script compilation
+        run: |
+          cd scripts
+          go build ${{ github.event.inputs.script }}
