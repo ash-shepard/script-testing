@@ -3,16 +3,22 @@ name: Test Golang Scripts
 on:
   workflow_dispatch:
     inputs:
-      script:
+      component:
         description: 'Script to run (e.g., hello.go)'
         required: false
         default: 'hello.go'
+
+env:
+  GET_THIS_VARIABLE: 'good job you got the value'
+  SET_THIS_VARIABLE: 'if you see this, it is bad'
 
 jobs:
   test-script:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    outputs:
+      script-output: ${{ steps.get-env.outputs.test-output }}
     
     steps:
       - name: Checkout repository
@@ -22,27 +28,36 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.22'
-      
-      - name: Validate script input
-        run: |
-          SCRIPT="${{ github.event.inputs.script }}"
-          # Validate that the script is a .go file
-          if [[ ! "$SCRIPT" =~ ^[a-zA-Z0-9_-]+\.go$ ]]; then
-            echo "Error: Invalid script name. Must be a .go file with alphanumeric characters, hyphens, or underscores."
-            exit 1
-          fi
-          # Check that the script exists
-          if [[ ! -f "scripts/$SCRIPT" ]]; then
-            echo "Error: Script 'scripts/$SCRIPT' does not exist."
-            exit 1
-          fi
-      
+       
       - name: Run golang script
+        id: run-script
         run: |
           cd scripts
-          go run ${{ github.event.inputs.script }}
-      
-      - name: Test script compilation
+          go run hello.go
+          go run workflows/autopromote/compare-values/compare.go
+          go run workflows/autopromote/compare-versions/compare.go
+
+      - name: grab env variable and set as output
+        id: get-env
+        shell: bash
         run: |
-          cd scripts
-          go build ${{ github.event.inputs.script }}
+          echo "this is the variable: ${{ env.SET_THIS_VARIABLE }}"
+
+          value="${{ env.SET_THIS_VARIABLE }}"
+          echo $value
+          echo "setting output variable"
+          echo "test-output=$value" >> $GITHUB_OUTPUT
+
+      - name: Get output variable
+        shell: bash
+        run: |
+          echo "The output variable is: ${{ steps.get-env.outputs.test-output }}"
+
+  new-job:
+    needs: test-script
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use output from previous job
+        shell: bash
+        run: |
+          echo "The output from the previous job is: ${{ needs.test-script.outputs.script-output }}"
