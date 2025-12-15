@@ -19,7 +19,21 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.22'
+      
+      - name: Validate script input
+        run: |
+          SCRIPT="${{ github.event.inputs.script }}"
+          # Validate that the script is a .go file
+          if [[ ! "$SCRIPT" =~ ^[a-zA-Z0-9_-]+\.go$ ]]; then
+            echo "Error: Invalid script name. Must be a .go file with alphanumeric characters, hyphens, or underscores."
+            exit 1
+          fi
+          # Check that the script exists
+          if [[ ! -f "scripts/$SCRIPT" ]]; then
+            echo "Error: Script 'scripts/$SCRIPT' does not exist."
+            exit 1
+          fi
       
       - name: Run golang script
         run: |
