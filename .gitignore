@@ -16,3 +16,6 @@ go.work
 
 # Build artifacts
 scripts/hello
+
+# Go module cache
+root/
