@@ -28,9 +28,9 @@ jobs:
         id: run-script
         run: |
           cd scripts
-          go run hello.go
+          go run workflows/hello.go
           go run workflows/autopromote/compare-values/compare.go
-          go run workflows/autopromote/compare-versions/compare.go
+          go run workflows/autopromote/compare-versions/versions.go
 
       - name: grab env variable and set as output
         id: get-env
